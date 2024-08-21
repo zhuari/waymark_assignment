@@ -13,16 +13,13 @@
 #     name: python3
 # ---
 
-# %%
 import boto3
 import pandas as pd
 from datetime import datetime
 
 
-# %% [markdown]
-# # Step 1
+# Step 1: Data Transformation
 
-# %% editable=true slideshow={"slide_type": ""}
 def s3_api_call(object_key, bucket_name='waymark-assignment', 
                 aws_access_key_id='AKIAZLXG4RYJBLE4OTXT', 
                 aws_secret_access_key='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'):
@@ -68,7 +65,6 @@ def find_consecutive_months(enroll_month):
 
 pt_enroll['subgroup'] = pt_enroll.groupby('patient_id').transform(find_consecutive_months)['month_year']
 
-# %%
 # create final patient_enrollment_span table of each patient's distinct enrollment period start and end dates
 patient_enrollment_span = pt_enroll.groupby(['patient_id', 'subgroup']).agg(
     patient_id = ('patient_id', 'first'),
@@ -77,13 +73,11 @@ patient_enrollment_span = pt_enroll.groupby(['patient_id', 'subgroup']).agg(
 ).reset_index(drop=True)
 
 patient_enrollment_span.to_csv('patient_enrollment_span.csv', index=False)
-
 print(f'Number of rows in patient_enrollment_span.csv: {len(patient_enrollment_span)}')
 
-# %% [markdown]
-# # Step 2
 
-# %%
+# Step 2: Data Aggregation
+
 opt_visits = s3_api_call(object_key='outpatient_visits_file.csv')
 # format outpatient visit date into standard date format YYYY-MM-DD
 opt_visits['date'] = convert_to_dt(opt_visits['date'])
@@ -119,5 +113,4 @@ results = pt_enroll_visits.groupby(['patient_id', 'subgroup']).agg(
 ).reset_index(drop=True)
 
 results.to_csv('results.csv', index=False)
-
 print(f"Distinct values of ct_days_with_outpatient_visit in result.csv: {results['ct_days_with_outpatient_visit'].nunique()}")
