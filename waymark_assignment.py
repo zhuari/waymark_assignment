@@ -1,28 +1,10 @@
-# ---
-# jupyter:
-#   jupytext:
-#     comment_magics: false
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.16.4
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
-
-# %%
 import boto3
 import pandas as pd
 from datetime import datetime
 
 
-# %% [markdown]
-# # Step 1
+# Step 1
 
-# %% editable=true jupyter={"source_hidden": true} slideshow={"slide_type": ""}
 def s3_api_call(object_key, bucket_name='waymark-assignment', 
                 aws_access_key_id='AKIAZLXG4RYJBLE4OTXT', 
                 aws_secret_access_key='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'):
@@ -58,7 +40,6 @@ def find_consecutive_months(enroll_month):
 
 pt_enroll['subgroup'] = pt_enroll.groupby('patient_id').transform(find_consecutive_months)['month_year']
 
-# %%
 patient_enrollment_span = pt_enroll.groupby(['patient_id', 'subgroup']).agg(
     patient_id = ('patient_id', 'first'),
     enrollment_start_date = ('month_year', 'min'),
@@ -66,23 +47,17 @@ patient_enrollment_span = pt_enroll.groupby(['patient_id', 'subgroup']).agg(
 ).reset_index(drop=True)
 
 patient_enrollment_span.to_csv('patient_enrollment_span.csv', index=False)
-
 print(len(patient_enrollment_span))
 
-# %% [markdown]
-# # Step 2
 
-# %%
+# Step 2
 opt_visits = s3_api_call(object_key='outpatient_visits_file.csv')
-
-# %%
 opt_visits['date'] = convert_to_dt(opt_visits['date'])
 
 # combine outpatient_visit_count of repeating dates
 opt_visits = opt_visits.groupby(['patient_id', 'date']).sum().reset_index()
 opt_visits['opt_visit_month'] = opt_visits['date'] - pd.offsets.MonthBegin()
 
-# %%
 opt_visits_grouped = opt_visits.groupby(['patient_id', 'opt_visit_month']).agg(
     patient_id = ('patient_id', 'first'),
     opt_visit_month = ('opt_visit_month', 'min'),
@@ -105,5 +80,4 @@ results = pt_enroll_visits.groupby(['patient_id', 'subgroup']).agg(
 ).reset_index(drop=True)
 
 results.to_csv('results.csv', index=False)
-
 print(results['ct_days_with_outpatient_visit'].nunique())
