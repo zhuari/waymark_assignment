@@ -93,7 +93,7 @@ pt_enroll_visits = pt_enroll.merge(
 )
 
 # create final results table of outpatient visits by continuous enrollment period
-results = pt_enroll_visits.groupby(['patient_id', 'subgroup']).agg(
+result = pt_enroll_visits.groupby(['patient_id', 'subgroup']).agg(
     patient_id = ('patient_id', 'first'),
     enrollment_start_date = ('month_year', 'min'),
     enrollment_end_date = ('month_year', 'max'),
@@ -101,5 +101,5 @@ results = pt_enroll_visits.groupby(['patient_id', 'subgroup']).agg(
     ct_days_with_outpatient_visit = ('ct_days_with_outpatient_visit', 'sum')
 ).reset_index(drop=True)
 
-results.to_csv('results.csv', index=False)
-print(f"Distinct values of ct_days_with_outpatient_visit in result.csv: {results['ct_days_with_outpatient_visit'].nunique()}")
+result.to_csv('result.csv', index=False)
+print(f"Distinct values of ct_days_with_outpatient_visit in result.csv: {result['ct_days_with_outpatient_visit'].nunique()}")
